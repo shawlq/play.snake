@@ -45,22 +45,35 @@ def _cnn_observation(env):
 
 def _compute_reward(result, env, prev_snake_head_pos, grid_size, max_growth):
     """
-    与 linyi snake_game_custom_wrapper_cnn 一致：
-    - 胜利(蛇填满棋盘)：reward = max_growth * 0.1
-    - 死亡：reward = -math.pow(max_growth, (grid_size - snake_size) / max_growth) * 0.1
-    - 吃到食物：reward = snake_size / grid_size（不乘 0.1）
-    - 否则：靠近食物 +1/snake_size，远离 -1/snake_size，再整体 * 0.1
+    与 linyi snake_game_custom_wrapper_cnn 一致，并做长蛇/满屏优化：
+    - 胜利(蛇填满棋盘)：reward = max_growth * 0.1 * WIN_REWARD_SCALE（强化满屏目标）
+    - 死亡：-math.pow(...)*0.1*death_scale
+    - 吃到食物：snake_size / grid_size
+    - 否则：步奖励（长蛇平滑衰减）+ 长蛇时生存奖励
+    grid_size = 144, max_growth = 141.
     """
+    STEP_REWARD_START_RATIO = 0.30
+    STEP_REWARD_END_RATIO = 0.45
+    DEATH_EXTRA_SCALE_RATIO = 0.5
+    WIN_REWARD_SCALE = 3.0
+    SURVIVAL_BONUS_WHEN_LONG = 0.0008
+
     reward = 0.0
     snake_size = len(env.snake_pos)
-    if snake_size == grid_size:
-        reward = max_growth * 0.1
+    if snake_size == grid_size-2:
+        reward = max_growth * 0.1 * WIN_REWARD_SCALE
     elif result < 0:
         reward = -math.pow(max_growth, (grid_size - snake_size) / max_growth)
         reward = reward * 0.1
+        # 长蛇时加大死亡惩罚，让「别送死」的信号更强
+        death_scale = 1.0 + DEATH_EXTRA_SCALE_RATIO * (snake_size / grid_size)
+        reward = reward * death_scale
+        # 死亡惩罚最小值为-10
+        reward = min(-10, reward)
     elif result > 0:
         reward = snake_size / grid_size
     else:
+        # 先算原始步奖励（靠近/远离食物）
         if prev_snake_head_pos is not None:
             head_pos = np.array(env.snake_pos[0])
             food_pos = np.array(env.food_pos)
@@ -73,6 +86,20 @@ def _compute_reward(result, env, prev_snake_head_pos, grid_size, max_growth):
         else:
             reward = -1.0 / snake_size
         reward = reward * 0.1
+        # 长蛇时平滑衰减步奖励，并接入生存奖励（连续）
+        start_thresh = STEP_REWARD_START_RATIO * grid_size
+        end_thresh = STEP_REWARD_END_RATIO * grid_size
+        if snake_size >= end_thresh:
+            scale = 0.0
+        elif snake_size > start_thresh:
+            scale = (end_thresh - snake_size) / (end_thresh - start_thresh)
+        else:
+            scale = 1.0
+        reward = reward * scale
+        # 长蛇时：生存奖励（scale 从 1->0 时从 0 增到满）
+        if scale < 1.0:
+            long_ratio = 1.0 - scale
+            reward = reward + long_ratio * SURVIVAL_BONUS_WHEN_LONG
     return reward
 
 

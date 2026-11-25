@@ -132,10 +132,14 @@ class CNNPPOPlayer:
             env = SubprocVecEnv([make(s, step_limit) for s in seed_set])
 
         print("Using MaskablePPO (sb3_contrib) CnnPolicy")
-        old_model_file = DEFAULT_PPO_MODEL_DIR + "ppo_snake_1Y.zip"
+        old_model_file = os.path.join(DEFAULT_PPO_MODEL_DIR, "cnn_ppo_snake_3e8.zip")
         if not new_model and os.path.exists(old_model_file):
-            print(f"Loading existing model: {old_model_file}")
             model = MaskablePPO.load(old_model_file, env=env)
+            # 继续训练时使用小学习率，避免从 2.5e-4 重新开始导致灾难性遗忘。
+            model.learning_rate = 2.5e-6 #linear_schedule(5e-6, 2.5e-6)
+            # clip_range 在 train() 里会被当作函数调用，必须传可调用对象
+            model.clip_range = lambda _: 0.025
+            print(f"Continue training {old_model_file} with lr=2.5e-6, clip_range=0.025")
         else:
             print("Training new CNN PPO model")
             lr_schedule = linear_schedule(2.5e-4, 2.5e-6)
@@ -199,7 +203,7 @@ class CNNPPOPlayer:
         env = PPOEnvAdp(ppo_env)
         reward_parser = PPORwdParserAdp()
         tester = Tester(env, agent, reward_parser)
-        tester.test(loops=50)
+        tester.test(loops=100)
 
     @classmethod
     def collection(cls, model_file):
