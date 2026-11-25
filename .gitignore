@@ -1,0 +1,8 @@
+*.pyc
+*.pth
+*.bak
+*.pkl
+logs/
+mdl/
+data/*.pkl
+__pycache__/
