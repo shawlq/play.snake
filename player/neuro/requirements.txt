@@ -1,0 +1,11 @@
+# Neuro / fly-brain players
+numpy
+scipy
+pandas
+pyarrow
+torch
+gymnasium
+stable-baselines3
+sb3-contrib
+tensorboard
+pygame

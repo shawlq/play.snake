@@ -11,6 +11,10 @@ from player.dqn.Im_player import ImPlayer
 from tools import Recorder
 from player.ppo.mlp_ppo_player import MLPPPOPlayer
 from player.ppo.cnn_ppo_player import CNNPPOPlayer
+from player.neuro.fly_player_fixed_brain import FlyFixedBrainPlayer
+from player.neuro.fly_player_plastic_brain import FlyPlasticBrainPlayer
+from player.neuro.fly_player_train_encoder import FlyTrainEncoderPlayer
+from player.neuro.fly_player_snake import FlySnakePlayer
 
 
 class MdlInfo:
@@ -28,6 +32,10 @@ def Mdl():
         "im": MdlInfo(ImPlayer, SnakeComm.im_model_file),
         "mlpppo": MdlInfo(MLPPPOPlayer, SnakeComm.mlp_ppo_model_file),
         "cnnppo": MdlInfo(CNNPPOPlayer, SnakeComm.cnn_ppo_model_file),
+        "flyfixed": MdlInfo(FlyFixedBrainPlayer, SnakeComm.fly_fixed_model_file),
+        "flyplastic": MdlInfo(FlyPlasticBrainPlayer, SnakeComm.fly_plastic_model_file),
+        "flyenc": MdlInfo(FlyTrainEncoderPlayer, SnakeComm.fly_enc_model_file),
+        "flysnake": MdlInfo(FlySnakePlayer, SnakeComm.fly_snake_model_file),
         "rec": MdlInfo(Recorder, None)
     }
     return mdl_tbl
@@ -43,6 +51,10 @@ def ShowHelp():
         "\n       im              imitation learning (BFS expert)"
         "\n       mlpppo          MLP PPO (SB3/sb3_contrib)"
         "\n       cnnppo          CNN PPO (SB3/sb3_contrib)"
+        "\n       flyfixed        fly brain fixed encoder+brain, train decoder"
+        "\n       flyplastic      fly brain Hebbian plastic + train decoder"
+        "\n       flyenc          fly brain fixed, train encoder+decoder"
+        "\n       flysnake        fly-brain-snake aligned computeStim+decide, BC+PPO"
         "\n       rec             for showing recorder playing the game"
         "\n   <action>:"
         "\n       re|retrain      for retraining new model"

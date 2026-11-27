@@ -32,6 +32,10 @@ class SnakeComm:
     im_model_file = "mdl/im_model.pth"
     mlp_ppo_model_file = "mdl/mlp_ppo/mlp_ppo_snake.zip"
     cnn_ppo_model_file = "mdl/cnn_ppo/cnn_ppo_snake.zip"
+    fly_fixed_model_file = "mdl/neuro/fixed/fly_fixed.zip"
+    fly_plastic_model_file = "mdl/neuro/plastic/fly_plastic.zip"
+    fly_enc_model_file = "mdl/neuro/enc/fly_enc.zip"
+    fly_snake_model_file = "mdl/neuro/snake/fly_snake.zip"
     
     data_dir = "data"
 

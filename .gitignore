@@ -6,3 +6,8 @@ logs/
 mdl/
 data/*.pkl
 __pycache__/
+player/neuro/data/*.csv
+player/neuro/data/*.parquet
+player/neuro/data/*.npz
+player/neuro/data/subgraph_cache*
+!player/neuro/data/groups.json
